@@ -3,19 +3,68 @@ name: Hello World Workflow
 on:
   push:
     branches: [ main ]
-
+  pull_request:
+    branches: [ main ]
 jobs:
-  say-hello:
+  setup:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - name: Print a greeting
-        run: echo "Hello, World!"
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Print event info
+      - name: Save node_modules as artifact (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: node_modules
+          path: node_modules
+test:
+  needs: setup
+  runs-on: ubuntu-latest
+  strategy:
+    matrix:
+      node-version: [16, 18, 20]
+  steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Download node_modules artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: node_modules
+        path: node_modules
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Run tests
+        run: |
+          if [ -f "package.json" ]; then
+            npm test
+          else
+            echo "No package.json found, skipping tests"
+          fi
+
+      - name: Print context info
         run: |
           echo "Triggered by: ${{ github.actor }}"
-          echo "Commit message: ${{ github.event.head_commit.message }}"
-          echo "Repository: ${{ github.repository }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Job status: ${{ job.status }}"
