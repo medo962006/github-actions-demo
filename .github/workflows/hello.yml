@@ -33,38 +33,38 @@ jobs:
         with:
           name: node_modules
           path: node_modules
-test:
-  needs: setup
-  runs-on: ubuntu-latest
-  strategy:
-    matrix:
-      node-version: [16, 18, 20]
-  steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Download node_modules artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: node_modules
-        path: node_modules
+      - name: Download node_modules artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: node_modules
+          path: node_modules
 
-    - name: Set up Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Run tests
+      - name: Run tests
         run: |
-          if [ -f "package.json" ]; then
-            npm test
-          else
-            echo "No package.json found, skipping tests"
-          fi
+            if [ -f "package.json" ]; then
+              npm test
+            else
+              echo "No package.json found, skipping tests"
+            fi
 
-    - name: Print context info
+      - name: Print context info
         run: |
-          echo "Triggered by: ${{ github.actor }}"
-          echo "Commit: ${{ github.sha }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "Job status: ${{ job.status }}"
+            echo "Triggered by: ${{ github.actor }}"
+            echo "Commit: ${{ github.sha }}"
+            echo "Ref: ${{ github.ref }}"
+            echo "Job status: ${{ job.status }}"
