@@ -62,7 +62,7 @@ test:
             echo "No package.json found, skipping tests"
           fi
 
-      - name: Print context info
+    - name: Print context info
         run: |
           echo "Triggered by: ${{ github.actor }}"
           echo "Commit: ${{ github.sha }}"
